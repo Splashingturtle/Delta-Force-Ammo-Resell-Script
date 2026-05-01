@@ -1,0 +1,33 @@
+﻿    <UserControl x:Class="AmmoResellScript.UserControls.Navigation"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+                 xmlns:local="clr-namespace:AmmoResellScript.UserControls"
+                 mc:Ignorable="d" 
+                 d:DesignHeight="450" d:DesignWidth="800">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+        <RadioButton Grid.Column="0" GroupName="Nav" IsChecked="True" Command="{Binding DataContext.NavigateCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter='AutoBuy'>
+            <StackPanel>
+                <TextBlock Text="扫货"/>
+            </StackPanel>
+        </RadioButton>
+
+        <RadioButton Grid.Column="1" GroupName="Nav" Command="{Binding DataContext.NavigateCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="Receive">
+            <StackPanel>
+                <TextBlock Text="接收"/>
+            </StackPanel>
+        </RadioButton>
+
+        <RadioButton Grid.Column="2" GroupName="Nav" Command="{Binding DataContext.NavigateCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="Setting">
+            <StackPanel>
+                <TextBlock Text="配置"/>
+            </StackPanel>
+        </RadioButton>
+        </Grid>
+    </UserControl>
