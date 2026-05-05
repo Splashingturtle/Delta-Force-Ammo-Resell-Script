@@ -1,0 +1,116 @@
+<UserControl x:Class="AmmoResellScript.Views.SettingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:helpers="clr-namespace:AmmoResellScript.Helpers"
+             mc:Ignorable="d"
+             d:DesignHeight="520" d:DesignWidth="600"
+             Background="Transparent">
+
+    <Grid Margin="28,20,28,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 配置卡片 -->
+        <Border Grid.Row="0"
+                Style="{StaticResource GlassCard}"
+                Padding="20,18,20,16">
+
+            <StackPanel Orientation="Vertical">
+
+                <!-- 绑定按钮网格 -->
+                <Grid Margin="0,0,0,14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Content="绑定目标子弹" Grid.Row="0" Grid.Column="0"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="TargetAmmo"/>
+                    <Button Content="绑定200发托条" Grid.Row="0" Grid.Column="2"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="TwoHundredAmmo"/>
+                    <Button Content="绑定购买按钮" Grid.Row="1" Grid.Column="0"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="BuyButton"/>
+                    <Button Content="绑定开始游戏" Grid.Row="1" Grid.Column="2"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="StartGameButton"/>
+                    <Button Content="绑定交易行" Grid.Row="2" Grid.Column="0"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="TradeRowButton"/>
+                    <Button Content="绑定账户坐标" Grid.Row="2" Grid.Column="2"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="Account"/>
+                    <Button Content="绑定价格区域" Grid.Row="3" Grid.Column="0"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="PriceRegion"/>
+                    <Button Content="绑定剩余哈弗币" Grid.Row="3" Grid.Column="2"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="RemainingHaverCoinRegion"/>
+                    <Button Content="绑定烽火地带" Grid.Row="4" Grid.Column="0"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="FengHuo"/>
+                    <Button Content="绑定全面战场" Grid.Row="4" Grid.Column="2"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding CommonButtonBindingCommand}" CommandParameter="QuanMian"/>
+                </Grid>
+
+                <!-- 分隔线 -->
+                <Border Height="1" Background="{StaticResource BorderSubtle}"
+                        Margin="0,0,0,14"/>
+
+                <!-- 参数输入 -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="购买次数"
+                               Style="{StaticResource FieldLabel}"
+                               HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                    <TextBox Grid.Row="0" Grid.Column="1"
+                             Style="{StaticResource SmallInputBox}"
+                             Text="{Binding PurchaseCount}" Margin="0,0,0,8"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="识别延迟"
+                               Style="{StaticResource FieldLabel}"
+                               HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                    <TextBox Grid.Row="1" Grid.Column="1"
+                             Style="{StaticResource SmallInputBox}"
+                             Text="{Binding ClickDelay}"/>
+                </Grid>
+
+                <!-- 保存按钮 -->
+                <Button Content="保存配置"
+                        Style="{StaticResource SaveButton}"
+                        HorizontalAlignment="Left"
+                        Command="{Binding SaveCommand}"/>
+
+            </StackPanel>
+        </Border>
+
+        <!-- 日志区 -->
+        <TextBox Grid.Row="1" Text="{Binding Logs}"
+                 Style="{StaticResource LogBox}"
+                 helpers:TextBoxHelper.AutoScrollToEnd="True"
+                 Margin="0,14,0,0"/>
+    </Grid>
+</UserControl>
