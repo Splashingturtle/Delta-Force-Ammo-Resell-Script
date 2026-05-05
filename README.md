@@ -9,6 +9,16 @@
 - **可视化配置 (Settings)** — 图形化配置屏幕坐标区域，支持点击取样绑定
 - **Acrylic 模糊窗口** — 适配 Windows 10/11 的亚克力毛玻璃窗口效果
 
+---
+
+<p align="center">
+  <a href="https://space.bilibili.com/502724171?spm_id_from=333.1007.0.0">
+    <img src="https://img.shields.io/badge/Bilibili-印地安美人鱼-00A1D6?style=for-the-badge&logo=bilibili&logoColor=white" alt="Bilibili">
+  </a>
+</p>
+
+---
+
 ## 软件截图
 
 | 自动购买 | UDP 接收 | 配置设置 |
