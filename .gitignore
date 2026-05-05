@@ -51,6 +51,9 @@ bld/
 ## VS Code
 .vscode/
 
+## Claude Code
+.claude/
+
 ## Windows
 Thumbs.db
 Desktop.ini
