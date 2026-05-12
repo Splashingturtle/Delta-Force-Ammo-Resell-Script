@@ -89,7 +89,7 @@ namespace AmmoResellScript.ViewModels
                         AddLog($"当前价格：{nowPrice}，目标价格：{TargetPrice}");
 
                         // 安全解析
-                        if (int.TryParse(TargetPrice, out int tar) && nowPrice <= tar)
+                        if (int.TryParse(TargetPrice, out int tar) && nowPrice <= tar && nowPrice >= 10)
                         {
                             AddLog($"⚠️ 价格低于目标，执行点击！");
                             try
