@@ -1,5 +1,6 @@
 using AmmoResellScript.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ namespace AmmoResellScript.Views
         public ReceiveView()
         {
             InitializeComponent();
+
             KeyDown += (s, e) =>
             {
                 if (e.Key == Key.R && DataContext is ReceiveViewModel vm)
@@ -23,6 +25,53 @@ namespace AmmoResellScript.Views
             if (app?.ServiceProvider != null)
             {
                 DataContext = app.ServiceProvider.GetRequiredService<ReceiveViewModel>();
+            }
+
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ReceiveViewModel vm)
+            {
+                ChartView.Model = vm.PlotModel;
+                ChartView.Controller = vm.PlotController;
+                vm.PropertyChanged += OnViewModelPropertyChanged;
+                SyncChartVisibility(vm.IsCalcPanelVisible);
+            }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ReceiveViewModel vm)
+            {
+                vm.PropertyChanged -= OnViewModelPropertyChanged;
+            }
+            ChartView.Model = null;
+            ChartView.Controller = null;
+        }
+
+        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ReceiveViewModel.IsCalcPanelVisible))
+            {
+                var vm = (ReceiveViewModel)sender;
+                SyncChartVisibility(vm.IsCalcPanelVisible);
+            }
+        }
+
+        private void SyncChartVisibility(bool isPanelVisible)
+        {
+            if (isPanelVisible)
+            {
+                RootGrid.RowDefinitions[1].Height = new GridLength(0);
+                ChartBorder.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                RootGrid.RowDefinitions[1].Height = new GridLength(2, GridUnitType.Star);
+                ChartBorder.Visibility = Visibility.Visible;
             }
         }
 

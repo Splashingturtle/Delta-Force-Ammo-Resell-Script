@@ -4,117 +4,162 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:helpers="clr-namespace:AmmoResellScript.Helpers"
+             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d"
              d:DesignHeight="560" d:DesignWidth="600"
              Background="Transparent">
 
-    <Grid Margin="28,20,28,16">
+    <Grid x:Name="RootGrid" Margin="28,20,28,16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- 功能卡片 -->
         <Border Grid.Row="0"
                 Style="{StaticResource GlassCard}"
-                Padding="22,20,22,16">
+                Padding="22,16,22,14">
 
             <StackPanel Orientation="Vertical">
 
                 <!-- 按钮行 -->
-                <Grid Margin="0,0,0,18">
+                <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="6"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="36"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="36"/>
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0" Content="开始扫货"
                             Style="{StaticResource PrimaryButton}"
                             Command="{Binding StartReceiveCommand}"/>
-                    <Button Grid.Column="2" Content="计算平均价格"
+                    <Button Grid.Column="2" Content="计算均价"
                             Style="{StaticResource SecondaryButton}"
                             Click="CalcAvgPrice_Click"/>
+                    <Button Grid.Column="4"
+                            Width="36" Height="36"
+                            FontSize="10"
+                            Command="{Binding ToggleCalcPanelCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ConfigButton}">
+                                <Setter Property="Content" Value="▲"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCalcPanelVisible}" Value="False">
+                                        <Setter Property="Content" Value="▼"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Grid.Column="6" Content="🗑"
+                            Width="36" Height="36"
+                            FontSize="14"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding ClearAllCommand}"/>
                 </Grid>
 
                 <!-- 分隔线 -->
                 <Border Height="1" Background="{StaticResource BorderSubtle}"
-                        Margin="0,0,0,14"/>
+                        Margin="0,0,0,10"/>
 
-                <!-- 目标价格 -->
-                <Grid Margin="0,0,0,12">
+                <!-- 价格区间 -->
+                <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="目标价格"
+                    <TextBlock Grid.Column="0" Text="目标"
                                Style="{StaticResource FieldLabel}"
-                               HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                               HorizontalAlignment="Right" Margin="0,0,6,0"/>
                     <TextBox Grid.Column="1"
                              Style="{StaticResource InputBox}"
                              Text="{Binding TargetPrice}"/>
-                </Grid>
-
-                <!-- 初始资金 -->
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="初始资金"
+                    <TextBlock Grid.Column="3" Text="最低"
                                Style="{StaticResource FieldLabel}"
-                               HorizontalAlignment="Right" Margin="0,0,14,0"/>
-                    <TextBox Grid.Column="1"
+                               HorizontalAlignment="Right" Margin="0,0,6,0"/>
+                    <TextBox Grid.Column="4"
                              Style="{StaticResource InputBox}"
-                             Text="{Binding InitCapital, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding MinPrice}"/>
                 </Grid>
 
-                <!-- 结束余额 -->
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="结束余额"
-                               Style="{StaticResource FieldLabel}"
-                               HorizontalAlignment="Right" Margin="0,0,14,0"/>
-                    <TextBox Grid.Column="1"
-                             Style="{StaticResource InputBox}"
-                             Text="{Binding EndBalance, UpdateSourceTrigger=PropertyChanged}"/>
-                </Grid>
+                <!-- 可折叠计算字段 -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsCalcPanelVisible}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
 
-                <!-- 子弹总数 -->
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="子弹总数"
-                               Style="{StaticResource FieldLabel}"
-                               HorizontalAlignment="Right" Margin="0,0,14,0"/>
-                    <TextBox Grid.Column="1"
-                             Style="{StaticResource InputBox}"
-                             Text="{Binding BulletCount, UpdateSourceTrigger=PropertyChanged}"/>
-                </Grid>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="初始"
+                                   Style="{StaticResource FieldLabel}"
+                                   HorizontalAlignment="Right" Margin="0,0,6,0"/>
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource InputBox}"
+                                 Text="{Binding InitCapital, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="3" Text="余额"
+                                   Style="{StaticResource FieldLabel}"
+                                   HorizontalAlignment="Right" Margin="0,0,6,0"/>
+                        <TextBox Grid.Column="4"
+                                 Style="{StaticResource InputBox}"
+                                 Text="{Binding EndBalance, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
 
-                <!-- 平均价格 -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="平均价格"
-                               Style="{StaticResource FieldLabel}"
-                               HorizontalAlignment="Right" Margin="0,0,14,0"/>
-                    <TextBox Grid.Column="1"
-                             Style="{StaticResource ReadOnlyInputBox}"
-                             Text="{Binding AvgPrice}"/>
-                </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="子弹"
+                                   Style="{StaticResource FieldLabel}"
+                                   HorizontalAlignment="Right" Margin="0,0,6,0"/>
+                        <TextBox Grid.Column="1"
+                                 Style="{StaticResource InputBox}"
+                                 Text="{Binding BulletCount, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="3" Text="均价"
+                                   Style="{StaticResource FieldLabel}"
+                                   HorizontalAlignment="Right" Margin="0,0,6,0"/>
+                        <TextBox Grid.Column="4"
+                                 Style="{StaticResource ReadOnlyInputBox}"
+                                 Text="{Binding AvgPrice}"/>
+                    </Grid>
+                </StackPanel>
 
             </StackPanel>
         </Border>
 
+        <!-- 实时价格走势图表 -->
+        <Border x:Name="ChartBorder" Grid.Row="1"
+                Style="{StaticResource GlassCard}"
+                Padding="8"
+                Margin="0,14,0,0">
+            <oxy:PlotView x:Name="ChartView"
+                          Background="Transparent"/>
+        </Border>
+
         <!-- 日志区 -->
-        <TextBox Grid.Row="1" Text="{Binding Logs}"
+        <TextBox Grid.Row="2" Text="{Binding Logs}"
                  Style="{StaticResource LogBox}"
                  helpers:TextBoxHelper.AutoScrollToEnd="True"
                  Margin="0,14,0,0"/>
