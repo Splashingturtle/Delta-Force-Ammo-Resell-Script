@@ -36,6 +36,9 @@ namespace AmmoResellScript
                 case "Receive":
                     MainContent = _serviceProvider.GetService<ReceiveViewModel>();
                     break;
+                case "DualEnd":
+                    MainContent = _serviceProvider.GetService<DualEndViewModel>();
+                    break;
                 case "Setting":
                     MainContent = _serviceProvider.GetService<SettingViewModel>();
                     break;

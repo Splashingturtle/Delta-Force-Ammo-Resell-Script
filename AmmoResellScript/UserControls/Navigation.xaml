@@ -29,6 +29,12 @@
             <RadioButton GroupName="Nav"
                          Style="{StaticResource NavTabButton}"
                          Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                         CommandParameter="DualEnd"
+                         Content="双端"/>
+
+            <RadioButton GroupName="Nav"
+                         Style="{StaticResource NavTabButton}"
+                         Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                          CommandParameter="Setting"
                          Content="配置"/>
 

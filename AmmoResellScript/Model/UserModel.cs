@@ -65,7 +65,7 @@ namespace AmmoResellScript.Model
         //购买次数
         public int PurchaseCount { get; set; } = 2;
         //点击延迟
-        public int ClickDelay { get; set; } = 2;
+        public int ClickDelay { get; set; } = 300;
 
     }
 }

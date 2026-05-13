@@ -30,6 +30,7 @@ namespace AmmoResellScript
         {
             service.AddSingleton<AutoBuyViewModel>();
             service.AddSingleton<ReceiveViewModel>();
+            service.AddSingleton<DualEndViewModel>();
             service.AddSingleton<SettingViewModel>();
             service.AddSingleton<MainWindowViewModel>();
         }

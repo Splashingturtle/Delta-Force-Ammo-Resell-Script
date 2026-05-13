@@ -32,7 +32,7 @@
                         <ColumnDefinition Width="6"/>
                         <ColumnDefinition Width="36"/>
                         <ColumnDefinition Width="4"/>
-                        <ColumnDefinition Width="36"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0" Content="开始扫货"
                             Style="{StaticResource PrimaryButton}"
@@ -55,9 +55,9 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    <Button Grid.Column="6" Content="🗑"
-                            Width="36" Height="36"
-                            FontSize="14"
+                    <Button Grid.Column="6" Content="清空"
+                            Width="52" Height="36"
+                            FontSize="11"
                             Style="{StaticResource ConfigButton}"
                             Command="{Binding ClearAllCommand}"/>
                 </Grid>

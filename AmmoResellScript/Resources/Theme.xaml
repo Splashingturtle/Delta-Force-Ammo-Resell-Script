@@ -471,6 +471,9 @@
     <DataTemplate DataType="{x:Type vm:ReceiveViewModel}">
         <views:ReceiveView/>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:DualEndViewModel}">
+        <views:DualEndView/>
+    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:SettingViewModel}">
         <views:SettingView/>
     </DataTemplate>
