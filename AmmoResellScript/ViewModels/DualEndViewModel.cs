@@ -149,13 +149,15 @@ namespace AmmoResellScript.ViewModels
                     }
 
                     firstMoney = currentMoney;
-                    AddLog($"价格：{priceInt}  余额差：{firstMoney - currentMoney:F0}");
+                    AddLog($"价格：{priceInt}");
 
                     if (priceInt <= target && priceInt >= 10)
                     {
                         AddLog($"🎯 命中！{priceInt} ≤ {target}，切小窗购买");
                         MouseService.AltTab();
-                        MouseService.MoveAndClick(_smallBuyX, _smallBuyY, clickDelay);
+                        MouseService.MoveMouseTo(_smallBuyX, _smallBuyY);  
+                        MouseService.LeftMouseClick();
+            
                         MouseService.AltTab();
                         AddLog("✅ 小窗购买完成");
                     }
