@@ -157,7 +157,8 @@ namespace AmmoResellScript.ViewModels
                         MouseService.AltTab();
                         MouseService.MoveMouseTo(_smallBuyX, _smallBuyY);  
                         MouseService.LeftMouseClick();
-            
+                        Thread.Sleep(5);
+
                         MouseService.AltTab();
                         AddLog("✅ 小窗购买完成");
                     }
