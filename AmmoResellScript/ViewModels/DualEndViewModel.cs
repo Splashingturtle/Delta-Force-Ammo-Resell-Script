@@ -155,9 +155,14 @@ namespace AmmoResellScript.ViewModels
                     {
                         AddLog($"🎯 命中！{priceInt} ≤ {target}，切小窗购买");
                         MouseService.AltTab();
-                        Thread.Sleep(55);
-                        MouseService.MoveMouseTo(_smallBuyX, _smallBuyY);                       
-                        MouseService.LeftMouseClick();
+                        Thread.Sleep(70);
+                        MouseService.MoveMouseTo(_smallBuyX, _smallBuyY);
+                        for (int i = 0; i <= config.PurchaseCount; i++)
+                        {
+                            MouseService.LeftMouseClick();
+                            Thread.Sleep(300);
+                        }
+                        
 
                        
 
