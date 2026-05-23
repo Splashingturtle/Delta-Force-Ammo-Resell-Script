@@ -2,11 +2,16 @@
 using AmmoResellScript.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace AmmoResellScript.ViewModels
 {
@@ -16,6 +21,16 @@ namespace AmmoResellScript.ViewModels
         private bool _isRunning;
         private CancellationTokenSource _cts;
         int count = 0;
+        int _consecutiveNegativeOneCount = 0;
+
+        // 图表相关
+        private LineSeries _lineSeries;
+        private int _dataIndex;
+
+        [ObservableProperty]
+        private PlotModel plotModel;
+        [ObservableProperty]
+        private IPlotController plotController;
 
         [ObservableProperty]
         private string logs;
@@ -25,12 +40,29 @@ namespace AmmoResellScript.ViewModels
         private bool isBroadcastEnabled;
         [ObservableProperty]
         private bool isThreeChecked;
+        [ObservableProperty]
+        private bool isChartVisible = true;
+
+        // 定时关机
+        [ObservableProperty]
+        private string shutdownMinutes = "60";
+        [ObservableProperty]
+        private string shutdownCountdown;
+        [ObservableProperty]
+        private bool isShutdownScheduled;
+
+        private CancellationTokenSource _shutdownCts;
 
         private const int MaxLines = 100;
 
         private readonly List<string> _logBuffer = new List<string>();
 
         UserModel ds = new UserModel();
+
+        public AutoBuyViewModel()
+        {
+            InitializeChart();
+        }
 
         [RelayCommand]
         private async Task StartAutoBuy()
@@ -49,8 +81,64 @@ namespace AmmoResellScript.ViewModels
             {
                 Task.Run(() => RunStart(_cts.Token, ds, IsBroadcastEnabled));
             }
-            
 
+
+        }
+
+        [RelayCommand]
+        private void ToggleView()
+        {
+            IsChartVisible = !IsChartVisible;
+        }
+
+        [RelayCommand]
+        private void ClearAll()
+        {
+            ClearLogs();
+        }
+
+        [RelayCommand]
+        private void ScheduleShutdown()
+        {
+            if (!int.TryParse(ShutdownMinutes, out int minutes) || minutes <= 0)
+            {
+                AddLog("请输入有效的关机时间（分钟）");
+                return;
+            }
+
+            IsShutdownScheduled = true;
+            AddLog($"已设置 {minutes} 分钟后自动关机");
+
+            // 自己倒计时，不调用 shutdown /s /t（会有弹窗）
+            _shutdownCts?.Cancel();
+            _shutdownCts = new CancellationTokenSource();
+            Task.Run(() => RunCountdown(minutes, _shutdownCts.Token));
+        }
+
+        [RelayCommand]
+        private void CancelShutdown()
+        {
+            _shutdownCts?.Cancel();
+            IsShutdownScheduled = false;
+            ShutdownCountdown = null;
+            AddLog("已取消定时关机");
+        }
+
+        private async void RunCountdown(int totalMinutes, CancellationToken token)
+        {
+            try
+            {
+                for (int remaining = totalMinutes; remaining > 0; remaining--)
+                {
+                    if (token.IsCancellationRequested) return;
+                    ShutdownCountdown = $"剩余 {remaining} 分钟";
+                    await Task.Delay(60000, token);
+                }
+                ShutdownCountdown = "正在关机...";
+                AddLog("时间到，执行关机");
+                System.Diagnostics.Process.Start("shutdown", "/p");
+            }
+            catch (TaskCanceledException) { }
         }
 
         private async void RunStart(CancellationToken token,UserModel ds,bool isBroadcastEnabled)
@@ -97,9 +185,28 @@ namespace AmmoResellScript.ViewModels
                     // ==============================================
                     string rawPrice = ScreenOcrHelper.RecognizeNumberFromScreen(ds.PriceRegionLeftX, ds.PriceRegionLeftY, ds.PriceRegionRightX, ds.PriceRegionRightY);
                     AddLog($"{DateTime.Now:HH:mm:ss} OCR 识别价格：{rawPrice}");
+
+                    if (rawPrice == "-1")
+                    {
+                        _consecutiveNegativeOneCount++;
+                        if (_consecutiveNegativeOneCount >= 10)
+                        {
+                            AddLog("⚠️ 连续识别到10次-1，执行处理逻辑");
+                            Thread.Sleep(1000);
+                            HandleContinuousNegativeOne();
+                            _consecutiveNegativeOneCount = 0;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        _consecutiveNegativeOneCount = 0;
+                    }
+
                     if (int.TryParse(rawPrice.Replace(",", ""), out int current))
                     {
-                        //AddLog($"当前价格：{current}，目标价格：{TargetPrice}");
+                        if (current > 0)
+                            ScheduleChartUpdate(current);
 
                         if (current <= TargetPrice && current > 0)
                         {
@@ -245,7 +352,105 @@ namespace AmmoResellScript.ViewModels
         public void ClearLogs()
         {
             _logBuffer.Clear();
-            Logs = string.Empty; // 清空日志显示
+            Logs = string.Empty;
+            _lineSeries?.Points.Clear();
+            _dataIndex = 0;
+            PlotModel?.InvalidatePlot(true);
+        }
+
+        #region 图表
+
+        private void InitializeChart()
+        {
+            var controller = new PlotController();
+            controller.UnbindAll();
+            PlotController = controller;
+
+            _lineSeries = new LineSeries
+            {
+                Title = "实时价格",
+                Color = OxyColor.FromRgb(0, 212, 255),
+                MarkerType = MarkerType.Circle,
+                MarkerSize = 2,
+                MarkerFill = OxyColor.FromRgb(0, 212, 255),
+                StrokeThickness = 1.5,
+                MarkerStroke = OxyColors.Transparent,
+            };
+
+            var model = new PlotModel
+            {
+                Title = "实时价格走势",
+                TitleColor = OxyColor.FromRgb(200, 210, 220),
+                TextColor = OxyColor.FromRgb(160, 170, 185),
+                PlotAreaBorderColor = OxyColor.FromRgb(55, 65, 80),
+                PlotMargins = new OxyThickness(60, 10, 20, 40),
+            };
+            model.Legends.Add(new OxyPlot.Legends.Legend
+            {
+                LegendTextColor = OxyColor.FromRgb(160, 170, 185),
+                LegendBorder = OxyColors.Transparent,
+                LegendBackground = OxyColors.Transparent,
+                LegendPosition = OxyPlot.Legends.LegendPosition.TopRight,
+                LegendPlacement = OxyPlot.Legends.LegendPlacement.Inside,
+            });
+
+            model.Axes.Add(new LinearAxis
+            {
+                Position = AxisPosition.Bottom,
+                Title = "序号",
+                TitleColor = OxyColor.FromRgb(160, 170, 185),
+                TextColor = OxyColor.FromRgb(140, 150, 165),
+                AxislineColor = OxyColor.FromRgb(55, 65, 80),
+                TicklineColor = OxyColor.FromRgb(55, 65, 80),
+                MajorGridlineColor = OxyColor.FromArgb(40, 80, 90, 105),
+                MinorGridlineColor = OxyColor.FromArgb(20, 80, 90, 105),
+                Minimum = 0,
+            });
+
+            model.Axes.Add(new LinearAxis
+            {
+                Position = AxisPosition.Left,
+                Title = "价格",
+                TitleColor = OxyColor.FromRgb(160, 170, 185),
+                TextColor = OxyColor.FromRgb(140, 150, 165),
+                AxislineColor = OxyColor.FromRgb(55, 65, 80),
+                TicklineColor = OxyColor.FromRgb(55, 65, 80),
+                MajorGridlineColor = OxyColor.FromArgb(40, 80, 90, 105),
+                MinorGridlineColor = OxyColor.FromArgb(20, 80, 90, 105),
+                Minimum = 0,
+            });
+
+            model.Series.Add(_lineSeries);
+            PlotModel = model;
+        }
+
+        private void ScheduleChartUpdate(int price)
+        {
+            var index = _dataIndex;
+            _dataIndex++;
+
+            Application.Current?.Dispatcher.InvokeAsync(() =>
+            {
+                _lineSeries.Points.Add(new DataPoint(index, price));
+                PlotModel.InvalidatePlot(true);
+            });
+        }
+
+        #endregion
+
+        private void HandleContinuousNegativeOne()
+        {
+            // TODO: 在此处编写连续识别到10次-1时的处理逻辑
+            for (int i = 0; i < 10; i++)
+            {
+                MouseService.MoveMouseTo(ds.TradeRowButtonX, ds.TradeRowButtonY);
+                MouseService.LeftMouseClick();
+                Thread.Sleep(200);
+
+                MouseService.MoveMouseTo(ds.TargetAmmoX, ds.TargetAmmoY);
+                MouseService.LeftMouseClick();
+            }
+            
         }
     }
 }

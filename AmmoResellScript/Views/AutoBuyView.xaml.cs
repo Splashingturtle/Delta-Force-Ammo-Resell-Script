@@ -31,6 +31,24 @@ namespace AmmoResellScript.Views
             {
                 DataContext = app.ServiceProvider.GetRequiredService<AutoBuyViewModel>();
             }
+
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is AutoBuyViewModel vm)
+            {
+                ChartView.Model = vm.PlotModel;
+                ChartView.Controller = vm.PlotController;
+            }
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            ChartView.Model = null;
+            ChartView.Controller = null;
         }
     }
 }

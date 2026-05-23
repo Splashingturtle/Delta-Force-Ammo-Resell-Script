@@ -4,11 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:helpers="clr-namespace:AmmoResellScript.Helpers"
+             xmlns:oxy="http://oxyplot.org/wpf"
              mc:Ignorable="d"
              d:DesignHeight="520" d:DesignWidth="600"
              Background="Transparent">
 
-    <Grid Margin="28,20,28,16">
+    <Grid x:Name="RootGrid" Margin="28,20,28,16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -20,23 +21,92 @@
                 Padding="22,20">
             <StackPanel Orientation="Vertical">
 
-                <!-- 开始扫货按钮 -->
-                <Button Content="开始扫货"
-                        Command="{Binding StartAutoBuyCommand}"
-                        Style="{StaticResource PrimaryButton}"
-                        Margin="0,0,0,18"/>
+                <!-- 按钮行 -->
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="6"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="开始扫货"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding StartAutoBuyCommand}"/>
+                    <Button Grid.Column="2"
+                            Height="36"
+                            FontSize="11"
+                            Padding="8,0"
+                            Command="{Binding ToggleViewCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ConfigButton}">
+                                <Setter Property="Content" Value="图表"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsChartVisible}" Value="False">
+                                        <Setter Property="Content" Value="日志"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Grid.Column="4" Content="清空"
+                            Width="52" Height="36"
+                            FontSize="11"
+                            Style="{StaticResource ConfigButton}"
+                            Command="{Binding ClearAllCommand}"/>
+                </Grid>
 
-                <!-- CheckBox 行 -->
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                            Margin="0,0,0,18">
-                    <CheckBox IsChecked="{Binding IsBroadcastEnabled}"
+                <!-- 分隔线 -->
+                <Border Height="1" Background="{StaticResource BorderSubtle}"
+                        Margin="0,0,0,16"/>
+
+                <!-- CheckBox + 定时关机 行 -->
+                <Grid Margin="0,0,0,18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Grid.Column="0"
+                              IsChecked="{Binding IsBroadcastEnabled}"
                               Style="{StaticResource GlassCheckBox}"
-                              Content="开启广播" Margin="0,0,24,0"/>
-                    <CheckBox IsChecked="{Binding IsThreeChecked}"
+                              Content="开启广播"/>
+                    <CheckBox Grid.Column="1"
+                              IsChecked="{Binding IsThreeChecked}"
                               Style="{StaticResource GlassCheckBox}"
-                              Content="31发检测模式"/>
-                </StackPanel>
+                              Content="31发检测" Margin="12,0,0,0"/>
+                    <StackPanel Grid.Column="3" Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="定时关机"
+                                   Style="{StaticResource FieldLabel}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,4,0"/>
+                        <TextBox Style="{StaticResource InputBox}"
+                                 Width="55"
+                                 Text="{Binding ShutdownMinutes, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="分钟"
+                                   Style="{StaticResource FieldLabel}"
+                                   VerticalAlignment="Center"
+                                   Margin="4,0,4,0"/>
+                        <Button Content="开始"
+                                Height="30" FontSize="11"
+                                Padding="8,0"
+                                Style="{StaticResource ConfigButton}"
+                                Command="{Binding ScheduleShutdownCommand}"/>
+                        <Button Content="取消"
+                                Height="30" FontSize="11"
+                                Padding="8,0"
+                                Style="{StaticResource ConfigButton}"
+                                Command="{Binding CancelShutdownCommand}"
+                                Margin="2,0,0,0"/>
+                        <TextBlock Text="{Binding ShutdownCountdown}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"/>
+                    </StackPanel>
+                </Grid>
 
                 <!-- 分隔线 -->
                 <Border Height="1" Background="{StaticResource BorderSubtle}"
@@ -59,10 +129,36 @@
             </StackPanel>
         </Border>
 
+        <!-- 实时价格走势图表 -->
+        <Border x:Name="ChartBorder" Grid.Row="1"
+                Padding="8"
+                Margin="0,14,0,0">
+            <Border.Style>
+                <Style TargetType="Border" BasedOn="{StaticResource GlassCard}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsChartVisible}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <oxy:PlotView x:Name="ChartView"
+                          Background="Transparent"/>
+        </Border>
+
         <!-- 日志区 -->
         <TextBox Grid.Row="1" Text="{Binding Logs}"
-                 Style="{StaticResource LogBox}"
                  helpers:TextBoxHelper.AutoScrollToEnd="True"
-                 Margin="0,14,0,0"/>
+                 Margin="0,14,0,0">
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource LogBox}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsChartVisible}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
     </Grid>
 </UserControl>
